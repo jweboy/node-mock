@@ -10,11 +10,11 @@ class Project extends Component {
 		super();
 
 		this.state = {
-			visible: false,
+			visible: true,
 			ruleForm: {
-				url: '',
+				url: '/test',
 				method: 'GET',
-				desc: '',
+				desc: '测试URL',
 			},
 		};
 	}
@@ -32,6 +32,14 @@ class Project extends Component {
     			visible: false,
     		});
     		console.log(fieldsValue);
+    		fetch('http://localhost:3000/endpoint', {
+    			body: JSON.stringify(fieldsValue),
+    			method: 'POST',
+    		})
+    			.then(res=> res.json())
+    			.then(data => {
+    				console.log(data);
+    			});
     	});
     }
     handleCloseModal = () => {
@@ -44,6 +52,11 @@ class Project extends Component {
     	const { getFieldDecorator } = form;
     	const { ruleForm, visible } = this.state;
 
+    	const formItemLayout = {
+    		labelCol: { span: 6 },
+    		wrapperCol: { span: 18 },
+    	};
+
     	return (
     		<div>
     			<Row>
@@ -51,18 +64,29 @@ class Project extends Component {
     					<footer className={styles.footer}>
     						<Button type="primary" onClick={this.handleClick}>新增规则</Button>
     						{/* Modal */}
-    						<Modal visible={visible} title="新增规则" onOk={this.handleSubmit} onCancel={this.handleCloseModal}>
-    							<Form layout="inline">
-    								<FormItem label="URL">
+    						<Modal visible={visible} title="新增规则" onOk={this.handleSubmit} onCancel={this.handleCloseModal} maskClosable={false}>
+    							<Form>
+    								<FormItem
+    									label="URL"
+    									{...formItemLayout}
+    								>
     									{
     										getFieldDecorator('url', {
     											initialValue: ruleForm.url,
+    											rules: [{
+    												type: 'string',
+    												required: true,
+    												message: '请输入URL'
+    											}],
     										})(
-    											<Input />
+    											<Input placeholder="请输入URL" />
     										)
     									}
     								</FormItem>
-    								<FormItem label="Method">
+    								<FormItem
+    									label="Method"
+    									{...formItemLayout}
+    								>
     									{
     										getFieldDecorator('method', {
     											initialValue: ruleForm.method,
@@ -77,12 +101,20 @@ class Project extends Component {
     										)
     									}
     								</FormItem>
-    								<FormItem label="Description">
+    								<FormItem
+    									label="Description"
+    									{...formItemLayout}
+    								>
     									{
     										getFieldDecorator('description', {
-    											initialValue: ruleForm.desc
+    											initialValue: ruleForm.desc,
+    											rules: [{
+    												type: 'string',
+    												required: true,
+    												message: '请输入描述'
+    											}],
     										})(
-    											<Input />
+    											<Input placeholder="请输入描述" />
     										)
     									}
     								</FormItem>
