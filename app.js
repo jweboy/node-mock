@@ -23,7 +23,8 @@ app.use(cors());
 app.use(bodyParser.json()); // for parsing application/json
 // app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-app.post('/endpoint', endpoint);
+app.post('/endpoint', endpoint.post);
+app.get('/endpoint', endpoint.get);
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000.');

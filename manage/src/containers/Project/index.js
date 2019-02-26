@@ -1,22 +1,47 @@
 import React, { Component } from 'react';
-import { Button, Row, Col, Modal, Form, Input, Select } from 'antd';
+import { Button, Row, Col, Modal, Form, Input, Select, Collapse  } from 'antd';
+import axios from 'axios';
 import styles from './index.less';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
+const Panel = Collapse.Panel;
+const REQUESTURL = 'http://localhost:3000/endpoint';
 
 class Project extends Component {
 	constructor() {
 		super();
 
 		this.state = {
-			visible: true,
+			visible: false,
 			ruleForm: {
 				url: '/test',
 				method: 'GET',
 				desc: '测试URL',
 			},
+			list: [],
 		};
+	}
+	componentDidMount() {
+		axios.get(REQUESTURL).then(({ data }) => {
+			console.warn(this.groupBy(data));
+			this.setState({
+				list: this.groupBy(data),
+			});
+		});
+	}
+	groupBy(arr = []) {
+		const combine = arr.reduce((obj, val, index) => {
+			obj[val.url] = (obj[val.url] || []).concat(arr[index]);
+			return obj;
+		}, {});
+
+		return Object.keys(combine).map(key => {
+			return {
+				key,
+				data: combine[key]
+			};
+		});
 	}
     handleClick = () => {
     	this.setState({
@@ -28,17 +53,16 @@ class Project extends Component {
     		if(err != null) {
     			return false;
     		}
-    		this.setState({
-    			visible: false,
-    		});
-    		console.log(fieldsValue);
-    		fetch('http://localhost:3000/endpoint', {
-    			body: JSON.stringify(fieldsValue),
+    		axios({
+    			url: REQUESTURL,
+    			data: fieldsValue,
     			method: 'POST',
     		})
-    			.then(res=> res.json())
-    			.then(data => {
-    				console.log(data);
+    			.then(({ data }) => {
+    				this.setState({
+    					list: this.groupBy(data),
+    					visible: false,
+    				});
     			});
     	});
     }
@@ -50,7 +74,7 @@ class Project extends Component {
     render() {
     	const { form } = this.props;
     	const { getFieldDecorator } = form;
-    	const { ruleForm, visible } = this.state;
+    	const { ruleForm, visible, list } = this.state;
 
     	const formItemLayout = {
     		labelCol: { span: 6 },
@@ -58,7 +82,7 @@ class Project extends Component {
     	};
 
     	return (
-    		<div>
+    		<div className="project">
     			<Row>
     				<Col span={12} offset={6}>
     					<footer className={styles.footer}>
@@ -123,6 +147,19 @@ class Project extends Component {
     					</footer>
     				</Col>
     			</Row>
+    			<Collapse>
+    				{
+    					list.map((item) => (
+    						<Panel key={item.key} header={item.key}>
+    							{
+    								item.data.map(child => {
+    									<p key={child.id}>{child.url}</p>;
+    								})
+    							}
+    						</Panel>
+    					))
+    				}
+    			</Collapse>
     		</div>
     	);
     }
